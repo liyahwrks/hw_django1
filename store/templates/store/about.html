@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="display-4 text-center mb-5">About BLACKPINK Shop</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <img src="https://cdn-images.dzcdn.net/images/artist/78239cba228e00eea1f378ba886b7d60/1900x1900-000000-80-0-0.jpg" 
+                 class="img-fluid rounded shadow mb-4" 
+                 alt="BLACKPINK Merchandise">
+        </div>
+        
+        <div class="col-md-6">
+            <h2 class="mb-4">We Deliver K-Pop Joy Worldwide!</h2>
+            <p class="lead mb-4">
+                BLACKPINK Shop is your official source for authentic albums and merchandise 
+                from your favorite K-Pop artists, delivered straight from Korea.
+            </p>
+            
+            <h4 class="mt-4 mb-3">What We Offer:</h4>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Official BLACKPINK albums & singles</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Limited edition merchandise</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Light sticks & concert goods</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Photocards & fan club kits</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Worldwide shipping with tracking</li>
+            </ul>
+            
+            <div class="mt-5">
+                <a href="/albums" class="btn btn-danger btn-lg">
+                    <i class="bi bi-shopping-cart me-2"></i>Shop Albums
+                </a>
+                <a href="/contact" class="btn btn-outline-dark btn-lg ms-2">
+                    <i class="bi bi-envelope me-2"></i>Contact Us
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
