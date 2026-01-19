@@ -1,70 +1,103 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.http import HttpResponse
-
-from store.models import Product
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+    TemplateView,
+)
+from django.contrib import messages
+from .models import Product, Category
 from .forms import ProductModelForm
 
-def index(request):
-    """Главная страница."""
-    context = {
-        'title': 'Главная страница !'
-    }
-    return render(request, 'base.html', context=context)
 
-def about_view(request):
-    """О нас"""
-    return render(request, 'store/about.html')
+class IndexTemplateView(TemplateView):
+    template_name = "store/base.html"
 
-def product_list(request):
-    """Список товаров"""
-    products = Product.objects.all()
-    context = {
-        'title': 'Список товаров',
-        'products': products,
-    }
-    return render(request, 'store/product_list.html', context)
-
-def product_detail(request, product_id):
-    """Детальная инфа о товаре"""
-    product = get_object_or_404(Product, pk=product_id)
-    context = {
-        'title': product.name,
-        'product': product,
-    }
-    return render(request, 'store/product_detail.html', context)
-
-def product_add(request):
-    """Добавление нового товара"""
-    if request.method == 'POST':
-        form = ProductModelForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            return redirect('product_detail', product_id=product.id)
-    else:
-        form = ProductModelForm()
-    
-    context = {
-        'title': 'Добавить новый товар',
-        'form': form,
-    }
-    return render(request, 'store/product_form.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Главная страница !"
+        return context
 
 
-def product_edit(request, product_id):
-    """Редактирование товара"""
-    product = get_object_or_404(Product, pk=product_id)
-    
-    if request.method == 'POST':
-        form = ProductModelForm(request.POST, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('product_detail', product_id=product.id)
-    else:
-        form = ProductModelForm(instance=product)
-    
-    context = {
-        'title': f'Редактировать {product.name}',
-        'form': form,
-        'product': product,
-    }
-    return render(request, 'store/product_form.html', context)
+class AboutTemplateView(TemplateView):
+    template_name = "store/about.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "О нас !"
+        return context
+
+
+class ProductBase:
+    model = Product
+    context_object_name = "product"
+
+
+class ProductListView(ProductBase, ListView):
+    template_name = "store/product_list.html"
+    context_object_name = "products"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        category_id = self.request.GET.get("category")
+        if category_id:
+            queryset = queryset.filter(category__id=category_id)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Список товаров"
+        return context
+
+
+class ProductDetailView(ProductBase, DetailView):
+    template_name = "store/product_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = self.object.name
+        return context
+
+
+class ProductCreateView(ProductBase, CreateView):
+    template_name = "store/product_form.html"
+    form_class = ProductModelForm
+    success_url = reverse_lazy("product_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Добавить новый товар"
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, "Товар успешно создан")
+        return super().form_valid(form)
+
+
+class ProductUpdateView(ProductBase, UpdateView):
+    template_name = "store/product_form.html"
+    form_class = ProductModelForm
+    success_url = reverse_lazy("product_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Редактировать {self.object.name}"
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, "Товар успешно обновлен")
+        return super().form_valid(form)
+
+
+class ProductDeleteView(ProductBase, DeleteView):
+    template_name = "store/product_confirm_delete.html"
+    success_url = reverse_lazy("product_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Удалить {self.object.name}"
+        return context
