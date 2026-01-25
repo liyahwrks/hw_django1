@@ -12,10 +12,11 @@ from django.views.generic import (
 from django.contrib import messages
 from .models import Product, Category
 from .forms import ProductModelForm
+from .tasks import log_new_product
 
 
 class IndexTemplateView(TemplateView):
-    template_name = "store/base.html"
+    template_name = "base.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -74,7 +75,15 @@ class ProductCreateView(ProductBase, CreateView):
         return context
 
     def form_valid(self, form):
+        product = form.save()
+
+        log_new_product.delay(
+            product_name=product.name,
+            product_price=str(product.price),
+        )
+
         messages.success(self.request, "Товар успешно создан")
+
         return super().form_valid(form)
 
 
